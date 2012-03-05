@@ -10,7 +10,12 @@
     
     "main": "./gnu-tools.js",
     "scripts": {
-        "preinstall" : "make install"
+        "preinstall" : "make install && make clean"
+    },
+    
+    "repository" : {
+        "type" : "git",
+        "url" : "http://github.com/c9/node-gnu-tools.git"
     },
     
     "licenses" : [{

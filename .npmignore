@@ -1,4 +1,5 @@
 .gitignore
-/bin/
 /findutils*
 /grep*
+/gnu-tools*.tgz
+/package/
