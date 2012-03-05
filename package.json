@@ -1,0 +1,10 @@
+{
+    "name": "gnu-tools",
+    "description": "GNU tools installer for npm",
+    "version": "0.0.1",
+    
+    "main": "./gnu-tools.js",
+    "scripts": {
+        "preinstall" : "make install"
+    }
+}
