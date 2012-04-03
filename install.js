@@ -8,6 +8,12 @@ const FS = require("fs");
 
 function main() {
 
+    var binBasePath = __dirname + "/bin";
+    if (!PATH.existsSync(binBasePath)) {
+        console.log("Creating directory ", binBasePath);
+        FS.mkdir(binBasePath, 0755);
+    }
+
     // Check if commands exist on PATH.
 
     commandExists("find", function(err, find) {
