@@ -11,7 +11,7 @@
     
     "main": "./index.js",
     "scripts": {
-        "preinstall" : "node ./install.js"
+        "postinstall" : "node ./install.js"
     },
     
     "repository" : {

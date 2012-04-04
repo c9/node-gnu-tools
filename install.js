@@ -12,6 +12,8 @@ function main() {
     if (!PATH.existsSync(binBasePath)) {
         console.log("Creating directory ", binBasePath);
         FS.mkdir(binBasePath, 0755);
+    } else {
+        console.log("Directory exists at ", binBasePath);
     }
 
     // Check if commands exist on PATH.
@@ -64,14 +66,16 @@ function fail(err) {
 
 function commandExists(name, callback) {
     
+    // NOTE: Assuming `which` command exists!
     EXEC("which " + name, function (error, stdout, stderr) {
         if (error || stderr) {
-            callback(error || stderr);
+            // TODO: Look for `which` command not found error.
+            callback(null, false);
             return;
         }
 
         var path = stdout.replace(/[\r\n\s]*/g, "");
-        
+
         PATH.exists(path, function(exists) {
             if (!exists) {
                 callback(null, false);
