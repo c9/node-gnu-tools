@@ -8,7 +8,7 @@ bin:
 	mkdir bin
 
 findutils-4.4.2.tar.gz:
-	wget http://ftpmirror.gnu.org/findutils/findutils-4.4.2.tar.gz
+	curl -LO http://ftpmirror.gnu.org/findutils/findutils-4.4.2.tar.gz
 
 bin/find: bin findutils-4.4.2.tar.gz
 	tar xvfz findutils-4.4.2.tar.gz
@@ -16,7 +16,7 @@ bin/find: bin findutils-4.4.2.tar.gz
 	cp findutils-4.4.2/find/find bin/find
 
 grep-2.9.tar.gz:
-	wget http://ftpmirror.gnu.org/grep/grep-2.9.tar.gz
+	curl -LO http://ftpmirror.gnu.org/grep/grep-2.9.tar.gz
 
 bin/grep: bin grep-2.9.tar.gz
 	tar xvfz grep-2.9.tar.gz
