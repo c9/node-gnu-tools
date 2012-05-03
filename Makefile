@@ -1,8 +1,8 @@
 install: bin/find bin/grep
 
 clean:
-	cd findutils-src && make clean
-	cd grep-src && make clean
+	cd findutils-src && make distclean
+	cd grep-src && make distclean
 
 bin:
 	mkdir bin
@@ -17,3 +17,6 @@ bin/find: bin
 bin/grep: bin
 	cd grep-src && ./configure && make
 	cp grep-src/src/grep bin/grep
+	
+publish: clean
+	npm publish
