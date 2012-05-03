@@ -1,3 +1,17 @@
 /bin/
 gnu-tools-*.tgz
 *.o
+.dirstamp
+stamp-h1
+*/po/POTFILES
+*/po/Makefile.in
+findutils-src/Makefile
+findutils-src/*/Makefile
+findutils-src/*/*/Makefile
+
+grep-src/Makefile
+grep-src/*/Makefile
+.deps/
+config.h
+config.log
+config.status

@@ -1,5 +1,9 @@
 install: bin/find bin/grep
 
+clean:
+	cd findutils-src && make clean
+	cd grep-src && make clean
+
 bin:
 	mkdir bin
 
