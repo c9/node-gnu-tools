@@ -11,6 +11,8 @@ findutils-src/*/*/Makefile
 
 grep-src/Makefile
 grep-src/*/Makefile
+pcre-src/Makefile
+pcre-src/*/Makefile
 .deps/
 config.h
 config.log

@@ -1,32 +1,19 @@
 install: bin/find bin/grep
 
 clean:
-	rm -rf grep*
-	rm -rf find*
-	rm -rf pcre*
+	cd findutils-src && make clean
+	cd grep-src && make clean
 
 bin:
 	mkdir bin
 
-findutils-4.4.2.tar.gz:
-	curl -LO http://ftpmirror.gnu.org/findutils/findutils-4.4.2.tar.gz
+pcre:
+	cd pcre-src && ./configure && make && make install
 
-bin/find: bin findutils-4.4.2.tar.gz
-	tar xvfz findutils-4.4.2.tar.gz
-	cd findutils-4.4.2 && ./configure && make
-	cp findutils-4.4.2/find/find bin/find
+bin/find: bin 
+	cd findutils-src && ./configure && make
+	cp findutils-src/find/find bin/find
 
-grep-2.9.tar.gz:
-	curl -LO http://ftpmirror.gnu.org/grep/grep-2.9.tar.gz
-
-bin/grep: bin grep-2.9.tar.gz
-	tar xvfz grep-2.9.tar.gz
-	cd grep-2.9 && ./configure && make
-	cp grep-2.9/src/grep bin/grep
-
-pcre-8.30.tar.gz:
-	curl -LO ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.30.tar.gz
-
-makepcre:
-	tar xvfz pcre-8.30.tar.gz
-	cd pcre-8.30 && ./configure && make && make install
+bin/grep: bin
+	cd grep-src && ./configure && make
+	cp grep-src/src/grep bin/grep
