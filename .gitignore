@@ -1,4 +1,5 @@
 /bin/
+/package/
 gnu-tools-*.tgz
 *.o
 .dirstamp

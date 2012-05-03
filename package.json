@@ -10,7 +10,7 @@
     
     "main": "./gnu-tools.js",
     "scripts": {
-        "preinstall" : "make install && make clean"
+        "install" : "make install"
     },
     
     "repository" : {

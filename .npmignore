@@ -5,15 +5,4 @@
 *.o
 .dirstamp
 stamp-h1
-*/po/POTFILES
-*/po/Makefile.in
 .deps/
-config.h
-config.log
-config.status
-
-findutils-src/Makefile
-findutils-src/*/Makefile
-findutils-src/*/*/Makefile
-grep-src/Makefile
-grep-src/*/Makefile
