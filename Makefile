@@ -8,7 +8,7 @@ bin:
 	mkdir bin
 
 pcre:
-	cd pcre-src && ./configure && make && make install
+	cd pcre-src && ./configure && make && sudo make install
 
 bin/find: bin 
 	cd findutils-src && ./configure && make
