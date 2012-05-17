@@ -11,8 +11,7 @@ Are we on Solaris?
   1. Yes: compile no matter what
   2. No: let's look for find and grep commands
    a. We found them! Nothing else is needed here.
-   b. We did not find them! Look for the sources in the gnu-tools package
-      * No sources found! Do `exec npm install` and set cwd()/../ to current gnu-tools dir 
+   b. We did not find them! Trash this dir, pull the files from npm, and compile
 */
 
 function main() {
