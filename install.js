@@ -1,10 +1,19 @@
 
 const SPAWN = require("child_process").spawn;
 const EXEC = require("child_process").exec;
-const GNU_TOOLS = require("./index");
+const GNU_TOOLS = require("./gnu-tools");
 const PATH = require("path");
 const FS = require("fs");
+const OS = require("os");
 
+/* Basic workflow is this:
+Are we on Solaris?
+  1. Yes: compile no matter what
+  2. No: let's look for find and grep commands
+   a. We found them! Nothing else is needed here.
+   b. We did not find them! Look for the sources in the gnu-tools package
+      * No sources found! Do `exec npm install` and set cwd()/../ to current gnu-tools dir 
+*/
 
 function main() {
 
@@ -24,28 +33,33 @@ function main() {
         commandExists("grep", function(err, grep) {
             if (err) fail(err);
 
-            if (find === false || grep === false) {
+            
+            if (OS.platform() == "SunOS" || find === false || grep === false) {
                 
-                // Compile from source.
-                
-                runMake([
-                     "install"
-                 ], function(err) {
-                     if (err) fail(err);
-              
-                     runMake([
-                          "clean"
-                      ], function(err) {
+                // Grab sources from npm.
+                fetchSources(function (err) {
+                    if (err) fail(err);
+                    
+                    // Compile from source.
+                    runMake([
+                         "install"
+                     ], function(err) {
                          if (err) fail(err);
-
-                          process.exit(0);
-                      });
-                 });
+                  
+                         runMake([
+                              "clean"
+                          ], function(err) {
+                             if (err) fail(err);
+    
+                              process.exit(0);
+                          });
+                     });
+                });
             }
             else {
-
+                console.log("Grand, you've already got 'find' and 'grep' on your system.");
+                
                 // Link to commands on PATH.
-
                 if (!PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
                     console.log("Linking ", find, " to ", GNU_TOOLS.FIND_CMD);
                     FS.symlinkSync(find, GNU_TOOLS.FIND_CMD);
@@ -107,6 +121,21 @@ function runMake(args, callback) {
     });
 }
 
+function fetchSources(callback) {
+    EXEC("cd ../.. && rm -rf node_modules/gnu-tools", function(error, stdout, stderr) {
+        if (error || stderr) {
+            callback(new Error("Removing 'node_modules/gnu-tools' directory failed with: " + error));
+            return;
+        }
+        EXEC("npm install gnu-tools", function (error, stdout, stderr) {
+            if (error || stderr) {
+                callback(new Error("'npm install gnu-tools' failed with: " + error));
+                return;
+            }
+            callback(null);
+        });
+    });
+}
 
 if (require.main === module) {
     main();
