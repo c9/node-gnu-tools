@@ -1,5 +1,9 @@
+/bin/
 .gitignore
-/findutils*
-/grep*
 /gnu-tools*.tgz
 /package/
+
+*.o
+.dirstamp
+stamp-h1
+.deps/
