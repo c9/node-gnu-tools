@@ -1,4 +1,8 @@
 
+// NOTE: Make sure ./package.json ~ config.srcNpmUri is set to a URL containing gnu-tools npm package with sources
+//       if deploying this package without the `./*-src` directories.
+//       e.g. https://github.com/c9/node-gnu-tools/tarball/8950ceef20b479382032dfabbcb40a23bb188044
+
 const SPAWN = require("child_process").spawn;
 const EXEC = require("child_process").exec;
 const GNU_TOOLS = require("./gnu-tools");
@@ -39,23 +43,12 @@ function main() {
                 if (OS.platform() == "SunOS" || find === false || grepPCRE === false) {
                     
                     // Grab sources from npm (if necessary)
-                    fetchSources(function (err) {
+                    compileSources(function (err) {
                         if (err) fail(err);
+  
+                        // All Done.
                         
-                        // Compile from source.
-                        runMake([
-                             "install"
-                         ], function(err) {
-                             if (err) fail(err);
-                      
-                             runMake([
-                                  "clean"
-                              ], function(err) {
-                                 if (err) fail(err);
-        
-                                  process.exit(0);
-                              });
-                         });
+                        process.exit(0);
                     });
                 }
                 else {
@@ -146,31 +139,58 @@ function runMake(args, callback) {
     });
 }
 
-function fetchSources(callback) {
+function compileSources(callback) {
     // check if sources already exist; don't get them below if it's not needed
     if (PATH.existsSync("./findutils-src") && PATH.existsSync("./grep-src") && PATH.existsSync("./pcre-src")) {
-        callback(null);
+
+        // Compile from source.
+        runMake([
+            "install"
+        ], function(err) {
+            if (err) fail(err);
+
+            runMake([
+                "clean"
+            ], function(err) {
+                if (err) fail(err);
+
+                callback(null);
+            });
+        });
         return;
     }
 
     var descriptor = JSON.parse(FS.readFileSync(PATH.join(__dirname, "package.json")));
     var srcNpmUri = descriptor.config.srcNpmUri;
 
-    EXEC("cd ../.. && rm -r node_modules/gnu-tools", function(error, stdout, stderr) {
-        if (error || stderr) {
-            callback(new Error("Removing 'node_modules/gnu-tools' directory failed with: " + error));
+    var cmd = "npm";
+    var cmdArgs = ["install", srcNpmUri];
+    console.log("Installing gnu-tools sources: " + cmd + " " + cmdArgs.join(" ") + " (cwd: " + __dirname + ")");
+    var make = SPAWN(cmd, cmdArgs, {
+        cwd: __dirname
+    });
+    make.stdout.on("data", function(data) {
+        process.stdout.write(data);
+    });
+    make.stderr.on("data", function(data) {
+        process.stdout.write(data);
+    });
+    make.on("exit", function(code) {
+        if (code) {
+            callback(new Error("'npm install gnu-tools' failed with: " + code));
             return;
         }
-        var cmd = "npm install '" + srcNpmUri + "'";
-        console.log("Installing gnu-tools sources: " + cmd);
-        EXEC(cmd + " && cd node_modules/gnu-tools", function (error, stdout, stderr) {
-            if (error || stderr) {
-                callback(new Error("'npm install gnu-tools' failed with: " + error));
-                return;
-            }
-            callback(null);
-            return;
-        });
+
+        // Swap out new gnu-tools for our current one.
+        
+        var dirname = __dirname;
+
+        FS.renameSync(PATH.join(dirname, "node_modules", "gnu-tools"), PATH.join(dirname, "..", "gnu-tools~src"));
+        FS.renameSync(PATH.join(dirname, "..", "gnu-tools"), PATH.join(dirname, "..", "gnu-tools~no-src-" + new Date().getTime()));
+        FS.renameSync(PATH.join(dirname, "..", "gnu-tools~src"), PATH.join(dirname, "..", "gnu-tools"));
+
+        callback(null);
+        return;
     });
 }
 

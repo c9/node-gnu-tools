@@ -25,6 +25,6 @@
     }],
     
     "config": {
-        "srcNpmUri": "gnu-tools"
+        "srcNpmUri": "https://github.com/c9/node-gnu-tools/tarball/8950ceef20b479382032dfabbcb40a23bb188044"
     }
 }
