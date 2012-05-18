@@ -31,17 +31,24 @@ function main() {
 
     // Check if commands exist on PATH.
 
-    commandExists("find", function(err, find) {
+    commandExists("grep", function(err, grep) {
         if (err) fail(err);
 
-        commandExists("grep", function(err, grep) {
+        if (grep === false) {
+            fail(new Error("You need some version of `grep` on your PATH to compile the gnu-tools version of grep!"));
+            return;
+        }
+
+        commandExists("find", function(err, find) {
             if (err) fail(err);
 
             checkPCRE(grep, function(err, grepPCRE) {
                 if (err) fail(err);
 
                 if (OS.platform() == "SunOS" || find === false || grepPCRE === false) {
-                    
+
+                    console.log("Compiling sources!");
+
                     // Grab sources from npm (if necessary)
                     compileSources(function (err) {
                         if (err) fail(err);
@@ -53,16 +60,22 @@ function main() {
                 }
                 else {
                     console.log("Grand, you've already got 'find' and 'grep' on your system.");
-                    
+
                     // Link to commands on PATH.
-                    if (!PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
-                        console.log("Linking ", find, " to ", GNU_TOOLS.FIND_CMD);
-                        FS.symlinkSync(find, GNU_TOOLS.FIND_CMD);
+                    if (find !== true) {
+                        if (!PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
+                            console.log("Linking ", find, " to ", GNU_TOOLS.FIND_CMD);
+                            FS.symlinkSync(find, GNU_TOOLS.FIND_CMD);
+                        }
                     }
-                    if (!PATH.existsSync(GNU_TOOLS.GREP_CMD)) {
-                        console.log("Linking ", grep, " to ", GNU_TOOLS.GREP_CMD);
-                        FS.symlinkSync(grep, GNU_TOOLS.GREP_CMD);
+                    if (grep !== true) {
+                        if (!PATH.existsSync(GNU_TOOLS.GREP_CMD)) {
+                            console.log("Linking ", grep, " to ", GNU_TOOLS.GREP_CMD);
+                            FS.symlinkSync(grep, GNU_TOOLS.GREP_CMD);
+                        }
                     }
+
+                    process.exit(0);
                 }
             });
         });
@@ -76,6 +89,19 @@ function fail(err) {
 
 function commandExists(name, callback) {
     
+    if (name === "grep") {
+        if (PATH.existsSync(GNU_TOOLS.GREP_CMD)) {
+            callback(null, true);
+            return;
+        }
+    } else
+    if (name === "find") {
+        if (PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
+            callback(null, true);
+            return;
+        }
+    }
+
     // NOTE: Assuming `which` command exists!
     EXEC("which " + name, function (error, stdout, stderr) {
         if (error || stderr) {
@@ -186,7 +212,7 @@ function compileSources(callback) {
         var dirname = __dirname;
 
         FS.renameSync(PATH.join(dirname, "node_modules", "gnu-tools"), PATH.join(dirname, "..", "gnu-tools~src"));
-        FS.renameSync(PATH.join(dirname, "..", "gnu-tools"), PATH.join(dirname, "..", "gnu-tools~no-src-" + new Date().getTime()));
+        FS.renameSync(PATH.join(dirname, "..", "gnu-tools"), PATH.join(dirname, "..", ".gnu-tools~no-src-" + new Date().getTime()));
         FS.renameSync(PATH.join(dirname, "..", "gnu-tools~src"), PATH.join(dirname, "..", "gnu-tools"));
 
         callback(null);
