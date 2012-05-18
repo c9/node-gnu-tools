@@ -1,4 +1,4 @@
-install: bin/grep pcre bin/find
+install: pcre bin/grep bin/find
 
 clean:
 	cd findutils-src && make distclean
