@@ -9,9 +9,10 @@ const OS = require("os");
 /* Basic workflow is this:
 Are we on Solaris?
   1. Yes: compile no matter what
-  2. No: let's look for find and grep commands
+  2. No: let's look for find and grep commands; also grep needs PCRE
    a. We found them! Nothing else is needed here.
-   b. We did not find them! Trash this dir, pull the files from npm, and compile
+   b. We did not find them! Look for the sources in the gnu-tools package
+     * No sources found! Do `exec npm install` and set cwd()/../ to current gnu-tools dir 
 */
 
 function main() {
@@ -32,42 +33,45 @@ function main() {
         commandExists("grep", function(err, grep) {
             if (err) fail(err);
 
-            
-            if (OS.platform() == "SunOS" || find === false || grep === false) {
-                
-                // Grab sources from npm.
-                fetchSources(function (err) {
-                    if (err) fail(err);
+            checkPCRE(grep, function(err, grepPCRE) {
+                if (err) fail(err);
+
+                if (OS.platform() == "SunOS" || find === false || grepPCRE === false) {
                     
-                    // Compile from source.
-                    runMake([
-                         "install"
-                     ], function(err) {
-                         if (err) fail(err);
-                  
-                         runMake([
-                              "clean"
-                          ], function(err) {
+                    // Grab sources from npm (if necessary)
+                    fetchSources(function (err) {
+                        if (err) fail(err);
+                        
+                        // Compile from source.
+                        runMake([
+                             "install"
+                         ], function(err) {
                              if (err) fail(err);
-    
-                              process.exit(0);
-                          });
-                     });
-                });
-            }
-            else {
-                console.log("Grand, you've already got 'find' and 'grep' on your system.");
-                
-                // Link to commands on PATH.
-                if (!PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
-                    console.log("Linking ", find, " to ", GNU_TOOLS.FIND_CMD);
-                    FS.symlinkSync(find, GNU_TOOLS.FIND_CMD);
+                      
+                             runMake([
+                                  "clean"
+                              ], function(err) {
+                                 if (err) fail(err);
+        
+                                  process.exit(0);
+                              });
+                         });
+                    });
                 }
-                if (!PATH.existsSync(GNU_TOOLS.GREP_CMD)) {
-                    console.log("Linking ", grep, " to ", GNU_TOOLS.GREP_CMD);
-                    FS.symlinkSync(grep, GNU_TOOLS.GREP_CMD);
+                else {
+                    console.log("Grand, you've already got 'find' and 'grep' on your system.");
+                    
+                    // Link to commands on PATH.
+                    if (!PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
+                        console.log("Linking ", find, " to ", GNU_TOOLS.FIND_CMD);
+                        FS.symlinkSync(find, GNU_TOOLS.FIND_CMD);
+                    }
+                    if (!PATH.existsSync(GNU_TOOLS.GREP_CMD)) {
+                        console.log("Linking ", grep, " to ", GNU_TOOLS.GREP_CMD);
+                        FS.symlinkSync(grep, GNU_TOOLS.GREP_CMD);
+                    }
                 }
-            }
+            });
         });
     });
 }
@@ -99,6 +103,28 @@ function commandExists(name, callback) {
     });
 }
 
+function checkPCRE(grep, callback) {
+    // we already don't have grep; just stop
+    if (grep === false) {
+        callback(null, false);
+        return;
+    }
+        
+    EXEC("grep -P", function (error, stdout, stderr) {
+        var firstLine = stderr.split("\n")[0];
+        
+        // if -P is invalid, then grep isn't supporting PCRE
+        if (firstLine.match(/invalid option/)) {
+            callback(null, false);
+            return;
+        }
+        else {
+            callback(null, true);
+            return;
+        }
+    });
+}
+
 function runMake(args, callback) {
 
     var make = SPAWN("make", args, {
@@ -121,17 +147,24 @@ function runMake(args, callback) {
 }
 
 function fetchSources(callback) {
+    // check if sources already exist; don't get them below if it's not needed
+    if (PATH.existsSync("./findutils-src") && PATH.existsSync("./grep-src") && PATH.existsSync("./pcre-src")) {
+        callback(null);
+        return;
+    }
+
     EXEC("cd ../.. && rm -rf node_modules/gnu-tools", function(error, stdout, stderr) {
         if (error || stderr) {
             callback(new Error("Removing 'node_modules/gnu-tools' directory failed with: " + error));
             return;
         }
-        EXEC("npm install gnu-tools", function (error, stdout, stderr) {
+        EXEC("npm install gnu-tools && cd node_modules/gnu-tools", function (error, stdout, stderr) {
             if (error || stderr) {
                 callback(new Error("'npm install gnu-tools' failed with: " + error));
                 return;
             }
             callback(null);
+            return;
         });
     });
 }
