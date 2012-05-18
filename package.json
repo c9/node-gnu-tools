@@ -22,5 +22,9 @@
     "licenses" : [{
         "type" : "MIT",
         "url" : "http://github.com/c9/architect/raw/master/LICENSE"
-    }]
+    }],
+    
+    "config": {
+        "srcNpmUri": "gnu-tools"
+    }
 }

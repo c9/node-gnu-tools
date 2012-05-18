@@ -153,12 +153,17 @@ function fetchSources(callback) {
         return;
     }
 
-    EXEC("cd ../.. && rm -rf node_modules/gnu-tools", function(error, stdout, stderr) {
+    var descriptor = JSON.parse(FS.readFileSync(PATH.join(__dirname, "package.json")));
+    var srcNpmUri = descriptor.config.srcNpmUri;
+
+    EXEC("cd ../.. && rm -r node_modules/gnu-tools", function(error, stdout, stderr) {
         if (error || stderr) {
             callback(new Error("Removing 'node_modules/gnu-tools' directory failed with: " + error));
             return;
         }
-        EXEC("npm install gnu-tools && cd node_modules/gnu-tools", function (error, stdout, stderr) {
+        var cmd = "npm install '" + srcNpmUri + "'";
+        console.log("Installing gnu-tools sources: " + cmd);
+        EXEC(cmd + " && cd node_modules/gnu-tools", function (error, stdout, stderr) {
             if (error || stderr) {
                 callback(new Error("'npm install gnu-tools' failed with: " + error));
                 return;
