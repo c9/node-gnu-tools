@@ -1,7 +1,7 @@
 install: pcre bin/grep bin/find
 
 clean:
-	rm -rf bin	
+	rm -r bin	
 	cd findutils-src && make distclean
 	cd grep-src && make distclean
 
