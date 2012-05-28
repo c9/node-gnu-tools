@@ -9,7 +9,8 @@ bin:
 	mkdir bin
 
 pcre:
-	cd pcre-src && ./configure && make && make install
+	cd pcre-src && ./configure && make
+	mkdir -p bin && cp pcre-src/.libs/pcregrep bin
 
 bin/find: bin 
 	cd findutils-src && ./configure && make
