@@ -5,12 +5,13 @@
     
     "author": "ajax.org B.V. <info@ajax.org>",
     "contributors": [
-        { "name": "Fabian Jakobs", "email": "fabian@c9.io" }
+        { "name": "Fabian Jakobs", "email": "fabian@c9.io" },
+        { "name": "Christoph Dorn", "email": "christoph@christophdorn.com" }
     ],
     
     "main": "./gnu-tools.js",
     "scripts": {
-        "install" : "make install"
+        "postinstall" : "node ./install.js"
     },
     
     "repository" : {
@@ -21,5 +22,9 @@
     "licenses" : [{
         "type" : "MIT",
         "url" : "http://github.com/c9/architect/raw/master/LICENSE"
-    }]
+    }],
+    
+    "config": {
+        "srcNpmUri": "https://github.com/c9/node-gnu-tools/tarball/d624ceda4b19f43d4ab60b99569b0b7f55ca76a6"
+    }
 }
