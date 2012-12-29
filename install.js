@@ -21,7 +21,7 @@ Are we on Solaris?
 
 function main() {
 
-    var binBasePath = __dirname + "/bin";
+    var binBasePath = PATH.join(__dirname, "/bin");
     if (!PATH.existsSync(binBasePath)) {
         console.log("Creating directory ", binBasePath);
         FS.mkdir(binBasePath, 0755);
@@ -102,15 +102,18 @@ function commandExists(name, callback) {
         }
     }
 
+    // win32 not doing which
+    var command = process.platform === "win32" ? "where" : "which";
+
     // NOTE: Assuming `which` command exists!
-    EXEC("which " + name, function (error, stdout, stderr) {
+    EXEC(command + " " + name, function (error, stdout, stderr) {
         if (error || stderr) {
             // TODO: Look for `which` command not found error.
             callback(null, false);
             return;
         }
 
-        var path = stdout.replace(/[\r\n\s]*/g, "");
+        var path = stdout.split("\n")[0].trim();
 
         PATH.exists(path, function(exists) {
             if (!exists) {
