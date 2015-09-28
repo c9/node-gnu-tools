@@ -9,7 +9,8 @@ const GNU_TOOLS = require("./gnu-tools");
 const PATH = require("path");
 const FS = require("fs");
 const OS = require("os");
-
+const EXISTS_SYNC = FS.existsSync != null ? FS.existsSync : PATH.existsSync
+const EXISTS = FS.exists != null ? FS.exists : PATH.exists
 /* Basic workflow is this:
 Are we on Solaris?
   1. Yes: compile no matter what
@@ -22,7 +23,7 @@ Are we on Solaris?
 function main() {
 
     var binBasePath = PATH.join(__dirname, "/bin");
-    if (!PATH.existsSync(binBasePath)) {
+    if (!EXISTS_SYNC(binBasePath)) {
         console.log("Creating directory ", binBasePath);
         FS.mkdir(binBasePath, 0755);
     } else {
@@ -63,13 +64,13 @@ function main() {
 
                     // Link to commands on PATH.
                     if (find !== true) {
-                        if (!PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
+                        if (!EXISTS_SYNC(GNU_TOOLS.FIND_CMD)) {
                             console.log("Linking ", find, " to ", GNU_TOOLS.FIND_CMD);
                             FS.symlinkSync(find, GNU_TOOLS.FIND_CMD);
                         }
                     }
                     if (grep !== true) {
-                        if (!PATH.existsSync(GNU_TOOLS.GREP_CMD)) {
+                        if (!EXISTS_SYNC(GNU_TOOLS.GREP_CMD)) {
                             console.log("Linking ", grep, " to ", GNU_TOOLS.GREP_CMD);
                             FS.symlinkSync(grep, GNU_TOOLS.GREP_CMD);
                         }
@@ -90,13 +91,13 @@ function fail(err) {
 function commandExists(name, callback) {
     
     if (name === "grep") {
-        if (PATH.existsSync(GNU_TOOLS.GREP_CMD)) {
+        if (EXISTS_SYNC(GNU_TOOLS.GREP_CMD)) {
             callback(null, true);
             return;
         }
     } else
     if (name === "find") {
-        if (PATH.existsSync(GNU_TOOLS.FIND_CMD)) {
+        if (EXISTS_SYNC(GNU_TOOLS.FIND_CMD)) {
             callback(null, true);
             return;
         }
@@ -115,7 +116,7 @@ function commandExists(name, callback) {
 
         var path = stdout.split("\n")[0].trim();
 
-        PATH.exists(path, function(exists) {
+        EXISTS(path, function(exists) {
             if (!exists) {
                 callback(null, false);
                 return;
@@ -170,7 +171,7 @@ function runMake(args, callback) {
 
 function compileSources(callback) {
     // check if sources already exist; don't get them below if it's not needed
-    if (PATH.existsSync("./findutils-src") && PATH.existsSync("./grep-src") && PATH.existsSync("./pcre-src")) {
+    if (EXISTS_SYNC("./findutils-src") && EXISTS_SYNC("./grep-src") && EXISTS_SYNC("./pcre-src")) {
 
         // Compile from source.
         runMake([
